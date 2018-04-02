@@ -3,62 +3,61 @@
 import pygame as pg
 import sys, os
 
-COR_BRANCO = (255, 255, 255)
+WHITE = (255, 255, 255)
 
-def big_bang(inic, tela,
-             quando_tick=lambda e: e, \
-             frequencia=28, \
-             desenhar=lambda e: pg.Surface((0,0)), \
-             quando_tecla=lambda e, k: e, \
-             quando_solta_tecla=lambda e, k: e, \
-             quando_mouse=lambda e, x, y, ev: e, \
-             parar_quando=lambda e: False,\
-             modo_debug=False,
-             fonte_debug = 15):
+def big_bang(init, screen,
+             on_tick=lambda e: e, \
+             framerate=28, \
+             draw=lambda e: pg.Surface((0,0)), \
+             on_key=lambda e, k: e, \
+             on_release=lambda e, k: e, \
+             ou_mouse=lambda e, x, y, ev: e, \
+             stop_when=lambda e: False,\
+             debug_mode=False,
+             debug_font = 15):
 
     pg.init()
-    estado = inic
+    state = init
     clock = pg.time.Clock()
-
 
     while True:
 
         pg.display.flip()
 
-        if parar_quando(estado):
-            print(estado)
+        if stop_when(state):
+            print(state)
             sys.exit(0)
 
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                print(estado)
+                print(state)
                 sys.exit(0)
 
             if event.type == pg.KEYDOWN:
-                estado = quando_tecla(estado, event.key)
+                state = on_key(state, event.key)
             elif event.type == pg.KEYUP:
-                estado = quando_solta_tecla(estado, event.key)
+                state = on_release(state, event.key)
             elif event.type in [pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP, pg.MOUSEMOTION]:
                 x, y = pg.mouse.get_pos()
-                estado = quando_mouse(estado, x, y, event.type)
+                state = ou_mouse(state, x, y, event.type)
 
-        estado = quando_tick(estado)
+        state = on_tick(state)
 
-        tela.fill(COR_BRANCO)
-        desenhar(estado)
-        if modo_debug:
-            escreve_estado(estado, tela, fonte_debug)
+        screen.fill(WHITE)
+        draw(state)
+        if debug_mode:
+            print_state(state, screen, debug_font)
 
-        clock.tick(frequencia)
+        clock.tick(framerate)
 
-def escreve_estado(estado, tela, fonte_debug):
-    myfont = pg.font.SysFont("monospace", fonte_debug)
-    # texto = str(estado).split(',')
+def print_state(state, screen, debug_font):
+    myfont = pg.font.SysFont("monospace", debug_font)
+    # text = str(state).split(',')
     import re
-    texto = re.findall('\[[^\]]*\]|\([^\)]*\)|\"[^\"]*\"|\S+', str(estado))
+    text = re.findall('\[[^\]]*\]|\([^\)]*\)|\"[^\"]*\"|\S+', str(state))
 
-    counter = fonte_debug
-    for line in texto:
+    counter = debug_font
+    for line in text:
         label = myfont.render(line, 1, (255, 0, 0))
-        tela.blit(label, (5, counter))
-        counter += fonte_debug
+        screen.blit(label, (5, counter))
+        counter += debug_font
